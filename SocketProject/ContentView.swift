@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  ClientSocketProject
+//  SocketProject
 //
 //  Created by Gilberto Magno on 12/05/25.
 //
@@ -10,10 +10,8 @@ import SwiftUI
 struct ConnectionRoomView: View {
     @State private var manager = ConnectionRoomManager.shared
     @State private var path: NavigationPath = .init()
-#if os(macOS)
-    @State private var window: NSWindow?
-#endif
-    
+//    @State private var window: NSWindow?
+
     var body: some View {
         NavigationStack(path: $path) {
             VStack {
@@ -22,6 +20,10 @@ struct ConnectionRoomView: View {
                 TextField("Port", value: $manager.port, format: .number)
                     .textFieldStyle(.roundedBorder)
                     .disabled(manager.state != .offline)
+                TextField("Connection IP", text: $manager.hostIP)
+                    .textFieldStyle(.roundedBorder)
+                    .disabled(manager.state != .offline)
+                Text("My IP: \(manager.myIP)")
 
                 HStack {
                     Button("Create Room") {
@@ -59,11 +61,10 @@ struct ConnectionRoomView: View {
                 }
             }
         }
-#if os(macOS)
-        .background(WindowAccessor(window: $window))
-        .onChange(of: window) {
-            window?.setFrame(NSRect(origin: .init(x: 410, y: 270) , size: .init(width: 514, height: 580)), display: true, animate: true)
-        }
-#endif
+//        .background(WindowAccessor(window: $window))
+//        .onChange(of: window) {
+//            window?.setFrame(NSRect(origin: .init(x: 410, y: 270) , size: .init(width: 514, height: 580)), display: true, animate: true)
+//        }
     }
 }
+

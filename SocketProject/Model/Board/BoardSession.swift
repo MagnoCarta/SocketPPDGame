@@ -1,6 +1,6 @@
 //
 //  BoardSession.swift
-//  ClientSocketProject
+//  SocketProject
 //
 //  Created by Gilberto Magno on 14/05/25.
 //
@@ -9,7 +9,6 @@ import SwiftUI
 import Foundation
 
 
-@MainActor
 @Observable
 class BoardSession {
     

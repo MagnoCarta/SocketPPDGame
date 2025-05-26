@@ -1,13 +1,14 @@
 //
 //  ConnectionMessage.swift
-//  ClientSocketProject
+//  SocketProject
 //
-//  Created by Gilberto Magno on 13/05/25.
+//  Created by Gilberto Magno on 14/05/25.
 //
+
 
 import Foundation
 
-class ConnectionMessage: Codable {
+struct ConnectionMessage: Codable {
     var name: String
     var number: Int
     

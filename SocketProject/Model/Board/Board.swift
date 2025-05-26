@@ -1,10 +1,9 @@
 //
 //  Board.swift
-//  ClientSocketProject
+//  SocketProject
 //
 //  Created by Gilberto Magno on 14/05/25.
 //
-
 
 import Foundation
 import SwiftUI

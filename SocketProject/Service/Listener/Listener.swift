@@ -3,6 +3,40 @@ import Network
 import Observation
 import SwiftUI
 
+@globalActor
+actor SocketActor: GlobalActor {
+    static let shared = SocketActor()
+    func run(_ completion: @escaping () -> Void) { completion() }
+}
+
+enum MessageType: String, Codable {
+    case text
+    case gameStart
+    case gameMove
+    case giveUp
+}
+
+struct Message: Codable, Identifiable, Equatable {
+    let id: UUID
+    let sender: String
+    let type: MessageType
+    let content: String
+    let broadcast: Bool
+}
+
+struct PlayMessage: Codable {
+    let fromRow: Int?
+    let fromCol: Int?
+    let toRow: Int
+    let toCol: Int
+    let phase: String
+    let playerNumber: Int
+}
+
+struct GiveUpMessage: Codable {
+    let message: String
+}
+
 @Observable
 class ConnectionRoomManager {
     static var playerNumber: Int = 0
@@ -14,7 +48,8 @@ class ConnectionRoomManager {
 
     var state: State = .offline
     var messages: [Message] = []
-    var hostIP: String = "10.200.201.34"
+    var myIP: String = "Loading..."
+    var hostIP: String = ""
     var port: UInt16 = 8080
     var input: String = ""
     var navigateToGame: () -> Void = {}
@@ -24,6 +59,15 @@ class ConnectionRoomManager {
     private var listener: NWListener?
     private var connections: [NWConnection] = []
     private var myConnection: NWConnection?
+    
+    private init() {
+        Task { @SocketActor in
+            if let ip = await getLocalIPAddress() {
+                self.myIP = ip
+                self.hostIP = ip
+            }
+        }
+    }
 
     func hostRoom() {
         Task { @SocketActor in
@@ -214,7 +258,86 @@ class ConnectionRoomManager {
 
         receiveLength()
     }
+
+    func fetchPublicIPAddress(completion: @escaping (String?) -> Void) {
+        guard let url = URL(string: "https://api.ipify.org?format=json") else {
+            completion(nil)
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard
+                let data = data,
+                error == nil,
+                let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                let ip = json["ip"] as? String
+            else {
+                completion(nil)
+                return
+            }
+
+            completion(ip)
+        }
+
+        task.resume()
+    }
+    
+
+    func getLocalIPAddress() async -> String? {
+        return await withCheckedContinuation { continuation in
+            let monitor = NWPathMonitor()
+            let queue = DispatchQueue(label: "IPMonitor")
+
+            monitor.pathUpdateHandler = { path in
+                if path.status == .satisfied {
+                        for endpoint in path.availableInterfaces {
+                            if let address = self.getIPAddress(for: endpoint.name) {
+                                monitor.cancel()
+                                continuation.resume(returning: address)
+                                return
+                            }
+                        }
+                }
+            }
+
+            monitor.start(queue: queue)
+        }
+    }
+
+    func getIPAddress(for interface: String) -> String? {
+        var address: String?
+
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        if getifaddrs(&ifaddr) == 0 {
+            var ptr = ifaddr
+
+            while ptr != nil {
+                defer { ptr = ptr?.pointee.ifa_next }
+
+                guard let interfaceName = ptr?.pointee.ifa_name else { continue }
+                let name = String(cString: interfaceName)
+                let addr = ptr?.pointee.ifa_addr.pointee
+
+                if name == interface, addr?.sa_family == UInt8(AF_INET) {
+                    var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                    if getnameinfo(ptr!.pointee.ifa_addr, socklen_t(ptr!.pointee.ifa_addr.pointee.sa_len),
+                                   &hostname, socklen_t(hostname.count),
+                                   nil, socklen_t(0), NI_NUMERICHOST) == 0 {
+                        address = String(cString: hostname)
+                        break
+                    }
+                }
+            }
+
+            freeifaddrs(ifaddr)
+        }
+
+        return address
+    }
+
+    
 }
+
 
 
 struct ChatView: View {
@@ -239,3 +362,4 @@ struct ChatView: View {
         }
     }
 }
+

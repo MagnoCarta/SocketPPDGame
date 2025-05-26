@@ -1,6 +1,6 @@
 //
-//  ClientSocketProjectApp.swift
-//  ClientSocketProject
+//  SocketProjectApp.swift
+//  SocketProject
 //
 //  Created by Gilberto Magno on 12/05/25.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct ClientSocketProjectApp: App {
+struct SocketProjectApp: App {
     var body: some Scene {
         WindowGroup {
             ConnectionRoomView()

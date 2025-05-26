@@ -5,7 +5,115 @@
 //  Created by Gilberto Magno on 13/05/25.
 //
 //
-
+//import SwiftUI
+//
+//struct MenuView: View {
+//
+//    var body: some View {
+//        NavigationStack {
+//            Text("Bem vindo ao Seega World!!!!!!!")
+//            NavigationLink("Criar nova sala") {
+//
+//            }
+//            NavigationLink("Entrar numa Sala Existente") {
+//
+//            }
+//        }
+//    }
+//
+//}
+//
+//@Observable
+//class RoomAssembler {
+//
+//    var currentSession: SessionManager?
+//    var currentConnectionEstablished: Bool = false
+//    var tookTooLongToConnect: Bool = false
+//
+//    func makeSession(host: String) {
+//        let newSession: SessionManager = .init(host: host,
+//                                               client: .init(completion: { connected in
+//            self.currentConnectionEstablished = connected
+//        }))
+//        self.currentSession = newSession
+//    }
+//
+//    @ViewBuilder func makeCurrentView() -> some View {
+//        if let currentSession {
+//            if currentConnectionEstablished {
+//                RoomView(sessionManager: currentSession)
+//            } else  {
+//                Text("Connection Being Established ...")
+//                    .task {
+//                        Task { [weak self] in
+//                            try await Task.sleep(for: .seconds(2.5))
+//                            self?.tookTooLongToConnect = true
+//                        }
+//                    }
+//                if tookTooLongToConnect {
+//                    Text("Connection Taking Too Long...Try Again")
+//                }
+//            }
+//        } else {
+//            Text("Session Being Established...")
+//        }
+//    }
+//
+//}
+//
+//struct CreateRoomView: View {
+//
+//    @State private var username: String = ""
+//    @State var assembler: RoomAssembler = .init()
+//
+//    var body: some View {
+//        TextField("Enter name...", text: $username)
+//            .textFieldStyle(RoundedBorderTextFieldStyle())
+//            .padding()
+//        NavigationLink("Iniciar Sessão com seu nome") {
+//            assembler.makeCurrentView()
+//                .onAppear {
+//                    assembler.makeSession(host: username)
+//                }
+//        }
+//    }
+//}
+//
+//struct RoomView: View {
+//
+//    init(sessionManager: SessionManager) {
+//        self.sessionManager = sessionManager
+//    }
+//
+//    var isCheckingOut: Bool = true
+//    var sessionManager: SessionManager
+//
+//    var body: some View {
+//        Text("Sala do Player \(sessionManager.host)")
+//        Text("Player One: \(sessionManager.host)")
+//        Text("Player Two: \(sessionManager.secondPlayer ?? "")")
+//    }
+//}
+//
+//
+//@Observable
+//class SessionManager {
+//    var host: String
+//    var secondPlayer: String?
+//    var client: TCPClient
+//
+//    init(host: String,
+//         client: TCPClient) {
+//        self.host = host
+//        self.client = client
+//    }
+//
+//}
+//
+//
+//class Sessions {
+//    static var instances: [SessionManager] = []
+//}
 import SwiftUI
 
 @Observable
@@ -162,9 +270,7 @@ enum Player: String, Codable {
 
 struct SeegaGameView: View {
     @State private var game = SeegaGameManager.shared
-#if os(macOS)
-    @State private var window: NSWindow?
-#endif
+//    @State private var window: NSWindow?
     @State private var isAlertPresented: Bool = false
 
     var body: some View {
@@ -242,15 +348,13 @@ struct SeegaGameView: View {
                 }
             }
         }
-#if os(macOS)
-        .background(WindowAccessor(window: $window))
-        .onChange(of: window) {
-            window?.setFrame(NSRect(origin: .init(x: 410, y: 270) , size: .init(width: 425, height: 580)), display: true, animate: true)
-        }
-        .onChange(of: game.isChatOpen) {
-            window?.setFrame(NSRect(origin: .init(x: 410, y: 270) , size: .init(width: game.isChatOpen ? 665 : 425, height: 580)), display: true, animate: true)
-        }
-#endif
+//        .background(WindowAccessor(window: $window))
+//        .onChange(of: window) {
+//            window?.setFrame(NSRect(origin: .init(x: 410, y: 270) , size: .init(width: 425, height: 580)), display: true, animate: true)
+//        }
+//        .onChange(of: game.isChatOpen) {
+//            window?.setFrame(NSRect(origin: .init(x: 410, y: 270) , size: .init(width: game.isChatOpen ? 665 : 425, height: 580)), display: true, animate: true)
+//        }
         .onAppear {
             ConnectionRoomManager.shared.handlePlayMessage = { play in
                 withAnimation {
